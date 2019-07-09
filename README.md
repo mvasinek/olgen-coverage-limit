@@ -8,7 +8,7 @@ Tool for computation of minimal coverage depth for the given variant allele freq
 * To run: python coverage_limit.py
 
 # Win32 installer
-* Contains Python programming language and neccessary libraries.
+* Contains Python programming language and necessary libraries.
 * Simple GUI in TKinter.
 * http://homel.vsb.cz/~vas218/programs/OLGENCoverageLimit.msi
 
