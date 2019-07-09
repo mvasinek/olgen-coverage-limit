@@ -3,8 +3,8 @@ Tool for computation of minimal coverage depth for the given variant allele freq
 
 # Python scripts
 * coverage_limit.py - TKinter based GUI.
-* binom.py - library with functions for computing of minimal coverage and variant allele frequency
-* Needs SciPy package installed. (https://www.scipy.org/install.html)
+* binom.py - library with functions for computing of minimal coverage and variant allele frequency.
+* Needs SciPy package installed (https://www.scipy.org/install.html).
 * To run: python coverage_limit.py
 
 # Win32 installer
@@ -17,4 +17,4 @@ Tool for computation of minimal coverage depth for the given variant allele freq
 * http://gapis.bach.cz/olgen-coverage-limit/
 
 # R scrips
-* Additionally R markup document source is provided with an example of R implementation of the library
+* Additionally R markup document source is provided with an example of R implementation of the statistical model.
