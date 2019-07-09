@@ -1,5 +1,5 @@
 # OLGEN Coverage Limit
-Tool for computation of minimal coverage depth for the given variant allele frequency and the probability of a sequencing error.
+Tool for calculating the minimal coverage depth for a given variant allele frequency and probability of sequencing error.
 
 # Python scripts
 * coverage_limit.py - TKinter based GUI.
