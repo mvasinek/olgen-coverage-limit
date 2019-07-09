@@ -1,0 +1,226 @@
+---
+title: "OLGEN Coverage Limit"
+output: pdf_document
+fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+n = 200
+k = seq(0,n,by=1)
+e = 0.01
+```
+
+# Introduction
+
+The software provides an easy way how to estimate the minimal depth of coverage given variant allele frequency ($v_f$), sequencing error ($p_e$) and limits for cumulative probability of $S_E$ or more errors ($p_{fp}$) resp. $\hat{v_f}$ or more reads supporting variant allele ($p_{tp}$).
+
+The computational model assumes that errors are accumulated in one variant allele only, either yielding a detection of false positive variant allele or suppressing detection of variant allele (false negative).
+
+The user of software (see Figure 1.) may optionally set a value for „minimal required variant allele frequency“.
+To estimate the minimal required depth of coverage, the software searches for a minimal value in which the cumulative distribution function (cdf) of binomial distribution meets limiting conditions. 
+
+![Screen from OLGEN Coverage Limit application.](./olgen-cov-lim.png){height=225px}
+
+# Statistical Model of Minimal Coverage
+
+In the further text, we assume that function $binom(N, p, k)$ returns probability that from $N$ trials, with probability of success $p$ we obtain exactly $k$ positive instances. And function $cdfbinom(N, p, k)$ returns cumulative probability that we obtain $k$ or more positive instances.
+
+## Sequencing Error
+
+We assume that the sequencing error $p_e$ is distributed binomially. For instance we can plot a probability density function for sequencing error $p_e=0.01$ and the number of reads $N=200$. See Figure 2.
+
+```{r echo=FALSE, fig.cap="Distribution of sequencing errors for $p_e=0.01$.", fig.height=4}
+e_b = dbinom(k, n, e)
+plot(k, e_b, type='b', xlim=c(0,10), ylab="Probability", xlab="Number of Reads")
+```
+
+We see that we obtain $S_E=2$ sequencing errors with the highest probability. It corresponds to our intuition as the expected value $E[S_E] = p_e N = 2$.
+
+```{r echo=FALSE}
+b = pbinom(k, n, e)
+#b
+
+x = 0
+for(i in 1:n){
+  if(b[i] < (1-e)){
+    x = x+1
+  }
+  else{
+    break
+  }
+}
+```
+
+Next we are interested in the number of sequencing errors $S_E$ so that the probability, that we obtain at most $S_E$ errors, is at least $p_{fp}$, i.e. $p(X\leq S_E) > p_{fp}$. The next plot shows such case for $p_e=0.01$, $N=200$ and $p_{fp}=0.99$, it yields that the limiting number of sequencing errors is equal to $S_E=6$ reads. See Figure 3.
+
+```{r echo=FALSE, fig.cap="Cumulative distribution of sequencing errors for $p_e=0.01$, with a vertical line denoting limit for which any higher number of sequencing errors have cumulative probability larger than 0.99.", fig.height=4}
+plot(k, b, type="b", lwd=2, col=3, xlim=c(0,20), 
+     xlab="Number of Reads", ylab="Cumulative Probability")
+abline(v=x, lwd=2, col=4)
+text(9.0, 0.5, "-> more than 0.99", col = 4)
+```
+
+
+
+## Variant Allele Reads
+
+```{r echo=FALSE}
+b3 = dbinom(k, n, 0.03)
+b5 = dbinom(k, n, 0.05)
+b10 = dbinom(k, n, 0.1)
+
+cb3 = pbinom(k, n, 0.03)
+cb5 = dbinom(k, n, 0.05)
+cb10 = dbinom(k, n, 0.1)
+
+x3 = 0
+for(i in 1:n){
+  if((1-cb3[i]) > 0.99){
+    x3 = x3 + 1
+  }
+  else{
+    break
+  }
+}
+
+x5 = 0
+for(i in 1:n){
+  if((1-cb5[i]) > 0.99){
+    x5 = x5 + 1
+  }
+  else{
+    break
+  }
+}
+
+x10 = 0
+for(i in 1:n){
+  if((1-cb10[i]) > 0.99){
+    x10 = x10 + 1
+  }
+  else{
+    break
+  }
+}
+```
+
+We again assume that the variant allele is distributed binomially. If the true frequency of variant allele is $v_f$ and the measured frequency is $\hat{v_f}$ then the probability that we observe $\hat{v_f}$ is given by $p(X=\hat{v_f})=binom(N, v_f, \hat{v_f})$ and the cumulative probability is $p(X>\hat{v_f})=cdfbinom(N,v_f, \hat{v_f})$.
+
+In the next plot Figure 4. there are three distributions for three different variant allele frequencies visualized. Vertical lines denote the limit where the cumulative probability $P(X>v_f)>0.99$.
+
+```{r echo=FALSE, fig.cap="Binomial distribution of variant allele reads for three different variant allele frequencies, with a vertical line denoting limit for which any higher number of sequencing errors have cumulative probability larger than 0.99."}
+plot(k,b3, type='b',xlab="Number of Variant Reads", ylab="Probability", lwd=2, col=2, 
+     xlim=c(0,30), pch=17)
+lines(k, b5, lwd=2, col=3, pch=18, type="b")
+lines(k, b10, lwd=2, col=4, pch=19, type="b")
+abline(v=x3,col=2, lwd=2)
+abline(v=x5,col=3, lwd=2)
+abline(v=x10,col=4, lwd=2)
+legend("topright", legend=c("VAF=3%","VAF=5%", "VAF=10%"),
+       lwd=c(2,2),col=c(2,3,4), pch=c(17,18,19))
+
+```
+
+The ultimate objective of this model is to establish a minimal coverage and a minimal number of variant reads so that we are guaranteed that with high probability $v_f > S_E$. 
+
+There are three conditions that must apply simultaneously:
+
+* $v_f > S_E$
+* $p(X>E)=cdfbinom(N,v_f,E) > 1 - p_{fp}$
+* $p(X>\hat{v_f})=cdfbinom(N,v_f, \hat{v_f}) > p_{tp}$
+
+The iterative algorithm implementing aforementioned conditions is presented in the next section using R programming language.
+
+# Example R Script
+
+* Variant allele frequency: $v_f=0.05$.
+* Sequencing error: $p_e=0.01$.
+* Limit of cumulative probability for sequencing errors: $p_{fp}=0.999$.
+* Limit of cumulative probability for variant reads: $p_{tp}=0.999$.
+
+```{r}
+coverage = 0
+vf = 0
+pfp = 0.999
+ptp = 0.999
+vaf = 0.1
+
+for(cov_aux in 30:500){
+  k = seq(0,cov_aux,by=1)
+  e_binom = pbinom(k, cov_aux, e) 
+  
+  se = 0
+  for(e_id in 1:cov_aux){
+    if(e_binom[e_id] < pfp){
+      se = se + 1
+    }
+    else{
+      break
+    }
+  }
+  
+  vf_binom = pbinom(k, cov_aux, vaf)
+  if(1 - vf_binom[se] >= ptp){
+    vf = se
+    coverage = cov_aux
+    break
+  }
+}
+```
+
+```{r}
+coverage
+vf
+
+```
+
+## Using Additional Parameter: Minimal Number of Variant Reads
+
+```{r}
+coverage = 0
+vf = 0
+pfp = 0.999
+ptp = 0.999
+vaf = 0.1
+min_variant_reads = 10
+
+for(cov_aux in 30:500){
+  k = seq(0,cov_aux,by=1)
+  e_binom = pbinom(k, cov_aux, e) 
+  
+  se = 0
+  for(e_id in 1:cov_aux){
+    if(e_binom[e_id] < pfp){
+      se = se + 1
+    }
+    else{
+      break
+    }
+  }
+  
+  vf_binom = pbinom(k, cov_aux, vaf)
+  if(1 - vf_binom[se] >= ptp && min_variant_reads <= se){
+    vf = se
+    coverage = cov_aux
+    break
+  }
+}
+```
+
+```{r}
+coverage
+vf
+
+```
+
+# Links
+
+The aforementioned statistical model can be accessed in several ways:
+
+* Source codes - including python and R scripts are freely available at: https://github.com/mvasinek/olgen_coverage_limit
+* The precompiled all-in-one Win32 installer containing GUI app written in Python programing language:
+
