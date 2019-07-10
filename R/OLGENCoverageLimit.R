@@ -63,5 +63,6 @@ coverage.relax.minvar <- function(vaf,e,pfp,ptp,minvar){
   c(coverage,vf)
 }
 
-coverage.relax(0.1,0.01,0.001,0.999)
-coverage.relax.minvar(0.1,0.01,0.001,0.999,10)
+#Usage
+#coverage.relax(0.1,0.01,0.001,0.999)
+#coverage.relax.minvar(0.1,0.01,0.001,0.999,10)
