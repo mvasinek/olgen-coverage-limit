@@ -1,12 +1,11 @@
 
-coverage.relax <- function(vaf, e, pfp, ptp){
+coverage.relax <- function(vaf, e, pfp, ptp, max_iterations=1000){
   coverage = 0
   vf = 0
   
-  cov_start = 30
-  cov_end = 10000
+  cov_aux = 30
   
-  for(cov_aux in cov_start:cov_end){
+  while(cov_aux < max_iterations){
     k = seq(0,cov_aux,by=1)
     e_binom = pbinom(k, cov_aux, e) 
     
@@ -28,18 +27,19 @@ coverage.relax <- function(vaf, e, pfp, ptp){
       coverage = cov_aux
       break
     }
+    
+    cov_aux = cov_aux + 1
   }
   c(coverage, vf)
 }
 
-coverage.relax.minvar <- function(vaf,e,pfp,ptp,minvar){
+coverage.relax.minvar <- function(vaf,e,pfp,ptp,minvar,max_iterations=1000){
   coverage = 0
   vf = 0
   
-  cov_start = 30
-  cov_end = 10000
+  cov_aux = 30
   
-  for(cov_aux in cov_start:cov_end){
+  while(cov_aux < max_iterations){
     k = seq(0,cov_aux,by=1)
     e_binom = pbinom(k, cov_aux, e) 
     
@@ -59,10 +59,12 @@ coverage.relax.minvar <- function(vaf,e,pfp,ptp,minvar){
       coverage = cov_aux
       break
     }
+    
+    cov_aux = cov_aux + 1
   }
   c(coverage,vf)
 }
 
 #Usage
-#coverage.relax(0.1,0.01,0.001,0.999)
-#coverage.relax.minvar(0.1,0.01,0.001,0.999,10)
+coverage.relax(0.1,0.01,0.001,0.999)
+coverage.relax.minvar(0.1,0.01,0.001,0.999,10)

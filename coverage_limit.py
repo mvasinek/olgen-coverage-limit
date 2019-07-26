@@ -148,7 +148,7 @@ class Window(Frame):
             return        
 
         if min_var == None:
-            cov,variants = relaxTPFP(INITIAL_COVERAGE, vaf, err, 1-err_lim, det_lim)
+            cov,variants = relaxTPFPMin(INITIAL_COVERAGE, vaf, err, 1-err_lim, det_lim, 1)
         else:
             cov,variants = relaxTPFPMin(INITIAL_COVERAGE, vaf, err, 1-err_lim, det_lim, min_var)
 
