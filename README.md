@@ -14,7 +14,7 @@ Tool for calculating the minimal coverage depth for a given variant allele frequ
 
 # Web app
 * Offers simple user interface accessible online.
-* http://gapis.bach.cz/olgen-coverage-limit/
+* http://app.olgen.cz/clc/
 
 # R scrips
 * Additionally R script is provided with an example of R implementation of the statistical model.
